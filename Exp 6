@@ -1,0 +1,20 @@
+import torch
+
+# Create two tensors
+a = torch.tensor([10.0, 20.0, 30.0])
+b = torch.tensor([2.0, 4.0, 5.0])
+
+# Perform mathematical operations
+addition = a + b
+subtraction = a - b
+multiplication = a * b
+division = a / b
+
+# Display results
+print("Tensor A:", a)
+print("Tensor B:", b)
+
+print("Addition:", addition)
+print("Subtraction:", subtraction)
+print("Multiplication:", multiplication)
+print("Division:", division)
