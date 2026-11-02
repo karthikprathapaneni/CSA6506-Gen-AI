@@ -1,0 +1,29 @@
+from transformers import BertTokenizer
+
+# Load BERT tokenizer
+tokenizer = BertTokenizer.from_pretrained(
+    "bert-base-uncased"
+)
+
+# Input sentence
+sentence = "Deep Learning is a part of Artificial Intelligence."
+
+# Generate token IDs
+encoded = tokenizer(
+    sentence,
+    add_special_tokens=True
+)
+
+# Extract tokens and IDs
+tokens = tokenizer.convert_ids_to_tokens(
+    encoded["input_ids"]
+)
+
+token_ids = encoded["input_ids"]
+
+# Display results
+print("Original Sentence:", sentence)
+print("\nTokens and Token IDs:")
+
+for token, token_id in zip(tokens, token_ids):
+    print(token, ":", token_id)
