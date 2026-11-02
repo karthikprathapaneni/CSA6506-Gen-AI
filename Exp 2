@@ -1,0 +1,4 @@
+import sklearn
+
+# Display Scikit-learn version
+print("Scikit-learn Version:", sklearn.__version__)
