@@ -1,0 +1,58 @@
+import torch
+import torch.nn.functional as F
+from transformers import AutoTokenizer, AutoModel
+
+# Load BERT model
+model_name = "bert-base-uncased"
+
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModel.from_pretrained(model_name)
+
+# Two similar sentences
+sentence1 = "The student is learning artificial intelligence."
+sentence2 = "A student studies machine learning."
+
+# Tokenize sentences
+inputs1 = tokenizer(
+    sentence1,
+    return_tensors="pt"
+)
+
+inputs2 = tokenizer(
+    sentence2,
+    return_tensors="pt"
+)
+
+# Generate embeddings
+with torch.no_grad():
+    output1 = model(**inputs1)
+    output2 = model(**inputs2)
+
+# Mean pooling using attention masks
+def mean_pooling(output, attention_mask):
+    token_embeddings = output.last_hidden_state
+    mask = attention_mask.unsqueeze(-1).expand(
+        token_embeddings.size()
+    ).float()
+
+    return (token_embeddings * mask).sum(1) / mask.sum(1)
+
+embedding1 = mean_pooling(
+    output1, inputs1["attention_mask"]
+)
+
+embedding2 = mean_pooling(
+    output2, inputs2["attention_mask"]
+)
+
+# Calculate cosine similarity
+similarity = F.cosine_similarity(
+    embedding1, embedding2
+)
+
+# Display results
+print("Sentence 1:", sentence1)
+print("Sentence 2:", sentence2)
+
+print("Cosine Similarity:",
+      similarity.item())
