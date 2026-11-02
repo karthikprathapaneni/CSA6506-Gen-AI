@@ -1,0 +1,16 @@
+from transformers import BertTokenizer
+
+# Load BERT tokenizer
+tokenizer = BertTokenizer.from_pretrained(
+    "bert-base-uncased"
+)
+
+# Input sentence
+sentence = "Artificial Intelligence is changing the world."
+
+# Perform tokenization
+tokens = tokenizer.tokenize(sentence)
+
+# Display tokens
+print("Original Sentence:", sentence)
+print("BERT Tokens:", tokens)
