@@ -1,0 +1,23 @@
+from transformers import AutoTokenizer
+
+# Load pre-trained BERT tokenizer
+tokenizer = AutoTokenizer.from_pretrained(
+    "bert-base-uncased"
+)
+
+# Input sentence
+sentence = "Machine Learning helps computers learn."
+
+# Tokenize sentence
+encoded = tokenizer(
+    sentence,
+    add_special_tokens=True
+)
+
+# Display tokenized output
+tokens = tokenizer.convert_ids_to_tokens(
+    encoded["input_ids"]
+)
+
+print("Original Sentence:", sentence)
+print("Tokenized Sentence:", tokens)
