@@ -1,0 +1,14 @@
+import pandas as pd
+
+# Create student data
+data = {
+    'Student Name': ['Arun', 'Karthik', 'Priya', 'Rahul', 'Sneha'],
+    'Grade': ['A', 'A+', 'B', 'A', 'B+']
+}
+
+# Create DataFrame
+df = pd.DataFrame(data)
+
+# Display DataFrame
+print("Student Grade Details:")
+print(df)
