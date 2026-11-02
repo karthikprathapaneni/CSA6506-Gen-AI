@@ -1,0 +1,8 @@
+import numpy as np
+
+# Create an array of first 20 natural numbers
+numbers = np.arange(1, 21)
+
+# Display the array
+print("First 20 Natural Numbers:")
+print(numbers)
