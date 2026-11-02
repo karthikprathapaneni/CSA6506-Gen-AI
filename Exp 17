@@ -1,0 +1,35 @@
+import torch
+from transformers import BertTokenizer, BertModel
+
+# Load BERT tokenizer and model
+tokenizer = BertTokenizer.from_pretrained(
+    "bert-base-uncased"
+)
+
+model = BertModel.from_pretrained(
+    "bert-base-uncased"
+)
+
+# Input sentence
+sentence = "Natural Language Processing is interesting."
+
+# Tokenize sentence
+inputs = tokenizer(
+    sentence,
+    return_tensors="pt"
+)
+
+# Generate contextual embeddings
+with torch.no_grad():
+    outputs = model(**inputs)
+
+# Extract last hidden state
+embeddings = outputs.last_hidden_state
+
+# Display embeddings
+print("Sentence:", sentence)
+print("Embedding Dimensions:", embeddings.shape)
+
+# Display first token embedding
+print("\nFirst Token Embedding:")
+print(embeddings[0][0])
