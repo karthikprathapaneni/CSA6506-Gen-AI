@@ -1,0 +1,29 @@
+import torch
+from transformers import AutoTokenizer, AutoModel
+
+# Load BERT tokenizer and model
+model_name = "bert-base-uncased"
+
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModel.from_pretrained(model_name)
+
+# Input sentence
+sentence = "Artificial Intelligence is powerful."
+
+# Tokenize input
+inputs = tokenizer(
+    sentence,
+    return_tensors="pt"
+)
+
+# Generate embeddings
+with torch.no_grad():
+    outputs = model(**inputs)
+
+# Extract contextual embeddings
+embeddings = outputs.last_hidden_state
+
+print("Input Sentence:", sentence)
+print("Embedding Shape:", embeddings.shape)
+print("Contextual Embeddings:")
+print(embeddings)
