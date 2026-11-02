@@ -1,0 +1,35 @@
+from transformers import GPT2LMHeadModel, GPT2Tokenizer
+
+# Load GPT-2 tokenizer and model
+tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+model = GPT2LMHeadModel.from_pretrained("gpt2")
+
+# Define input prompt
+prompt = "Machine Learning plays an important role in"
+
+# Tokenize prompt
+input_ids = tokenizer.encode(
+    prompt,
+    return_tensors="pt"
+)
+
+# Generate text
+output = model.generate(
+    input_ids,
+    max_new_tokens=60,
+    do_sample=True,
+    temperature=0.8,
+    top_k=50,
+    pad_token_id=tokenizer.eos_token_id
+)
+
+# Decode generated output
+generated_text = tokenizer.decode(
+    output[0],
+    skip_special_tokens=True
+)
+
+# Display generated text
+print("Input Prompt:", prompt)
+print("\nGenerated Text:")
+print(generated_text)
