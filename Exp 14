@@ -1,0 +1,30 @@
+from transformers import pipeline
+
+# Load question answering pipeline
+qa_pipeline = pipeline(
+    "question-answering",
+    model="distilbert/distilbert-base-cased-distilled-squad"
+)
+
+# Define context
+context = """
+Artificial Intelligence is a branch of computer science.
+It focuses on developing machines that can perform tasks
+that normally require human intelligence.
+Machine Learning is a subset of Artificial Intelligence.
+"""
+
+# Define question
+question = "What is Machine Learning?"
+
+# Generate answer
+result = qa_pipeline(
+    question=question,
+    context=context
+)
+
+# Display result
+print("Context:", context)
+print("Question:", question)
+print("Answer:", result["answer"])
+print("Confidence:", result["score"])
