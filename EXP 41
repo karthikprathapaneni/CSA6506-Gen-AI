@@ -1,0 +1,110 @@
+import os
+from pathlib import Path
+from pypdf import PdfReader
+from dotenv import load_dotenv
+
+from langchain_core.documents import Document
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.vectorstores import Chroma
+from langchain_openai import ChatOpenAI
+
+load_dotenv()
+
+# 1. Load external documents
+documents = []
+
+folder = Path("documents")
+
+for file in folder.iterdir():
+
+    if file.suffix.lower() == ".txt":
+        text = file.read_text(encoding="utf-8")
+        documents.append(
+            Document(
+                page_content=text,
+                metadata={"source": file.name}
+            )
+        )
+
+    elif file.suffix.lower() == ".pdf":
+        reader = PdfReader(str(file))
+
+        for page_number, page in enumerate(reader.pages):
+            text = page.extract_text() or ""
+
+            if text.strip():
+                documents.append(
+                    Document(
+                        page_content=text,
+                        metadata={
+                            "source": file.name,
+                            "page": page_number + 1
+                        }
+                    )
+                )
+
+if not documents:
+    raise ValueError("No readable documents found!")
+
+# 2. Split documents into chunks
+splitter = RecursiveCharacterTextSplitter(
+    chunk_size=500,
+    chunk_overlap=50
+)
+
+chunks = splitter.split_documents(documents)
+
+# 3. Generate embeddings
+embeddings = HuggingFaceEmbeddings(
+    model_name="sentence-transformers/all-MiniLM-L6-v2"
+)
+
+# 4. Create vector database
+db = Chroma.from_documents(
+    documents=chunks,
+    embedding=embeddings,
+    collection_name="document_assistant"
+)
+
+# 5. Initialize LLM
+llm = ChatOpenAI(model="gpt-4.1-mini")
+
+print("\nDocument AI Assistant Started!")
+print("Ask questions about your documents.")
+print("Type exit to stop.")
+
+while True:
+
+    question = input("\nYou: ")
+
+    if question.lower() == "exit":
+        break
+
+    # Retrieve relevant chunks
+    results = db.similarity_search(question, k=3)
+
+    context = "\n".join(
+        [doc.page_content for doc in results]
+    )
+
+    # Generate answer
+    prompt = f"""
+    You are a document-based AI assistant.
+
+    Answer only using the provided context.
+
+    Context:
+    {context}
+
+    Question:
+    {question}
+
+    If the answer is unavailable in the context,
+    say so clearly.
+    """
+
+    response = llm.invoke(prompt)
+
+    print("\nAI Assistant:")
+    print(response.content)
