@@ -1,0 +1,66 @@
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+from openai import OpenAI
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+client = OpenAI(
+    api_key=os.getenv("OPENAI_API_KEY")
+)
+
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+documents = [
+    "AI is used in healthcare for disease diagnosis.",
+    "AI helps doctors analyze medical images.",
+    "Machine Learning supports disease prediction.",
+    "AI helps discover new medicines.",
+    "Robotic surgery improves surgical precision."
+]
+
+# Generate document embeddings
+doc_embeddings = model.encode(documents)
+
+# User question
+question = input("Ask a question: ")
+
+# Retrieve relevant documents
+query_embedding = model.encode([question])
+
+scores = cosine_similarity(
+    query_embedding,
+    doc_embeddings
+)[0]
+
+top_indices = scores.argsort()[-3:][::-1]
+
+context = "\n".join(
+    [documents[i] for i in top_indices]
+)
+
+# Generate answer using LLM
+prompt = f"""
+Answer the question using the given context.
+
+Context:
+{context}
+
+Question:
+{question}
+
+If the answer is not present in the context,
+say that the information is not available.
+"""
+
+response = client.responses.create(
+    model="gpt-5.5",
+    input=prompt
+)
+
+print("\nRetrieved Context:")
+print(context)
+
+print("\nGenerated Answer:")
+print(response.output_text)
