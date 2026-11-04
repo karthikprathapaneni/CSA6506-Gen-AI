@@ -1,0 +1,69 @@
+from openai import OpenAI
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+task = "Explain the applications of AI in education."
+
+prompts = {
+    "Zero-shot": task,
+
+    "One-shot": """
+Example:
+Topic: AI in Banking
+Answer: AI helps banks detect fraud and automate transactions.
+
+Now answer:
+Explain the applications of AI in education.
+""",
+
+    "Few-shot": """
+Example 1:
+Topic: AI in Banking
+Answer: AI detects fraud and automates transactions.
+
+Example 2:
+Topic: AI in Agriculture
+Answer: AI helps farmers monitor crops and predict diseases.
+
+Now answer:
+Explain the applications of AI in education.
+"""
+}
+
+results = {}
+
+for method, prompt in prompts.items():
+
+    print("\n" + "=" * 50)
+    print(method)
+    print("=" * 50)
+
+    try:
+        response = client.responses.create(
+            model="gpt-5.5",
+            input=prompt
+        )
+
+        output = response.output_text
+        results[method] = output
+
+        print(output)
+
+    except Exception as e:
+        print("Error:", e)
+
+print("\n\nCOMPARATIVE ANALYSIS")
+
+for method, output in results.items():
+    print("\nTechnique:", method)
+    print("Generated characters:", len(output))
+    print("Generated words:", len(output.split()))
+
+print("\nEvaluation Criteria:")
+print("1. Quality")
+print("2. Relevance")
+print("3. Accuracy")
+print("4. Consistency")
