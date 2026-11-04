@@ -1,0 +1,52 @@
+article = input("Enter the article:\n")
+
+prompts = {
+    "Zero-shot": f"""
+Summarize the following article in exactly 50 words.
+Preserve the main ideas and important information.
+
+Article:
+{article}
+""",
+
+    "One-shot": f"""
+Example:
+Article: Artificial Intelligence helps computers perform
+tasks such as learning and decision-making.
+
+Summary: AI enables computers to learn, analyze information
+and make decisions automatically.
+
+Now summarize the following article in exactly 50 words.
+
+Article:
+{article}
+""",
+
+    "Few-shot": f"""
+Example 1:
+Article: Solar energy converts sunlight into electricity.
+Summary: Solar energy provides clean electricity using sunlight.
+
+Example 2:
+Article: Online education enables students to learn remotely.
+Summary: Online education provides flexible learning through
+digital platforms.
+
+Now summarize the following article in exactly 50 words.
+
+Article:
+{article}
+"""
+}
+
+for method, prompt in prompts.items():
+    print("\n", "=" * 50)
+    print(method)
+    print("=" * 50)
+    print(prompt)
+
+print("\nEvaluation Criteria:")
+print("1. Accuracy")
+print("2. Completeness")
+print("3. Readability")
