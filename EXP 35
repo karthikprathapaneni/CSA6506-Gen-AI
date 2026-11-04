@@ -1,0 +1,50 @@
+import faiss
+import numpy as np
+from sentence_transformers import SentenceTransformer
+
+# Load embedding model
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+documents = [
+    "Artificial Intelligence is used in healthcare.",
+    "Python is used for software development.",
+    "Machine Learning learns patterns from data.",
+    "Deep Learning uses artificial neural networks.",
+    "Cybersecurity protects computer networks."
+]
+
+# Generate embeddings
+embeddings = model.encode(documents)
+
+# Convert embeddings into NumPy array
+embeddings = np.array(
+    embeddings, dtype="float32"
+)
+
+# Create FAISS index
+dimension = embeddings.shape[1]
+
+index = faiss.IndexFlatL2(dimension)
+
+# Store vectors
+index.add(embeddings)
+
+print("FAISS Vector Database Created!")
+
+# Search query
+query = input("\nEnter your query: ")
+
+query_vector = model.encode([query])
+
+query_vector = np.array(
+    query_vector, dtype="float32"
+)
+
+# Similarity search
+distances, indices = index.search(query_vector, 3)
+
+print("\nTop 3 Retrieved Documents:")
+
+for i, idx in enumerate(indices[0]):
+    print("\nDocument:", documents[idx])
+    print("Distance:", distances[0][i])
