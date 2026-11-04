@@ -1,0 +1,40 @@
+# Experiment 1: Smart Fitness Watch
+
+prompts = {
+    "Zero-shot": """
+Write an attractive product description for a Smart Fitness Watch.
+Mention its health tracking, heart rate monitoring, sleep tracking,
+battery life and fitness features. Use marketing language.
+""",
+
+    "One-shot": """
+Example:
+Product: Smart Earbuds
+Description: Experience clear sound and comfort with wireless
+earbuds featuring noise cancellation and long battery life.
+
+Now write a similar product description for a Smart Fitness Watch.
+Include health tracking, heart rate monitoring, sleep analysis
+and fitness tracking.
+""",
+
+    "Few-shot": """
+Example 1:
+Product: Smart Shoes
+Description: Comfortable shoes with advanced cushioning
+designed for everyday activities.
+
+Example 2:
+Product: Smart Water Bottle
+Description: A smart bottle that reminds users to stay hydrated.
+
+Now generate a product description for a Smart Fitness Watch.
+Include its main features, benefits and target customers.
+"""
+}
+
+for method, prompt in prompts.items():
+    print("\n" + "=" * 50)
+    print(method)
+    print("=" * 50)
+    print(prompt)
