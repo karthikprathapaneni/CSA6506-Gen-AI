@@ -1,0 +1,53 @@
+import chromadb
+from sentence_transformers import SentenceTransformer
+
+# Initialize ChromaDB
+client = chromadb.PersistentClient(
+    path="./chroma_db"
+)
+
+# Create collection
+collection = client.get_or_create_collection(
+    name="college_documents"
+)
+
+# Load embedding model
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+documents = [
+    "Artificial Intelligence is transforming healthcare.",
+    "Python is a programming language.",
+    "Machine Learning enables automatic learning.",
+    "Deep Learning uses neural networks.",
+    "Cloud computing provides online services."
+]
+
+ids = ["doc1", "doc2", "doc3", "doc4", "doc5"]
+
+# Generate embeddings
+embeddings = model.encode(documents).tolist()
+
+# Store documents and embeddings
+collection.upsert(
+    ids=ids,
+    documents=documents,
+    embeddings=embeddings
+)
+
+print("Documents stored successfully!")
+
+# Search query
+query = input("\nEnter your search query: ")
+
+query_embedding = model.encode([query]).tolist()
+
+# Top-K retrieval
+results = collection.query(
+    query_embeddings=query_embedding,
+    n_results=3
+)
+
+print("\nTop 3 Retrieved Documents:")
+
+for document in results["documents"][0]:
+    print("-", document)
