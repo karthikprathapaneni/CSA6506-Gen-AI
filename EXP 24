@@ -1,0 +1,53 @@
+prompts = {
+    "Zero-shot": """
+Write a professional email requesting leave due to illness.
+Include a subject, greeting, reason, leave request,
+expected duration and closing.
+Use polite and formal language.
+""",
+
+    "One-shot": """
+Example:
+
+Subject: Leave Request
+
+Dear Sir,
+I am unable to attend work due to personal reasons.
+Kindly grant me leave for one day.
+
+Thank you,
+Student
+
+Now write a professional email requesting leave due to illness.
+Include all necessary email details.
+""",
+
+    "Few-shot": """
+Example 1:
+Subject: Request for One-Day Leave
+Dear Manager,
+I am feeling unwell and request leave for one day.
+Thank you.
+
+Example 2:
+Subject: Medical Leave Request
+Dear Sir,
+Due to fever, I am unable to attend college.
+Kindly grant me two days of leave.
+
+Now generate a professional illness-related leave email.
+Include a subject, greeting, reason, duration and closing.
+"""
+}
+
+for method, prompt in prompts.items():
+    print("\n", "=" * 50)
+    print(method)
+    print("=" * 50)
+    print(prompt)
+
+print("\nEvaluation Criteria:")
+print("1. Tone")
+print("2. Grammar")
+print("3. Formatting")
+print("4. Completeness")
