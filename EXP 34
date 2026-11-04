@@ -1,0 +1,40 @@
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+documents = [
+    "Python is used for programming and software development.",
+    "AI helps computers perform intelligent tasks.",
+    "Cloud computing provides online storage and services.",
+    "Machine learning is used for prediction and classification.",
+    "Cybersecurity protects systems from digital attacks."
+]
+
+# Convert documents into vectors
+document_vectors = model.encode(documents)
+
+# User query
+query = input("Enter your query: ")
+
+# Convert query into vector
+query_vector = model.encode([query])
+
+# Cosine similarity calculation
+similarity = cosine_similarity(
+    query_vector,
+    document_vectors
+)[0]
+
+# Sort documents by similarity
+ranked_results = sorted(
+    enumerate(similarity),
+    key=lambda x: x[1],
+    reverse=True
+)
+
+print("\nSemantic Search Results:")
+
+for index, score in ranked_results:
+    print("\nDocument:", documents[index])
+    print("Similarity Score:", round(float(score), 4))
