@@ -1,0 +1,29 @@
+from openai import OpenAI
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+client = OpenAI(
+    api_key=os.getenv("OPENAI_API_KEY")
+)
+
+print("OpenAI Text Generation")
+
+while True:
+    prompt = input("\nEnter your prompt (or exit): ")
+
+    if prompt.lower() == "exit":
+        break
+
+    try:
+        response = client.responses.create(
+            model="gpt-5.5",
+            input=prompt
+        )
+
+        print("\nGenerated Output:")
+        print(response.output_text)
+
+    except Exception as e:
+        print("Error:", e)
