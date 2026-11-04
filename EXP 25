@@ -1,0 +1,45 @@
+prompts = {
+    "Zero-shot": """
+Create an attractive promotional social media post for an
+AI Workshop.
+
+Include the workshop title, benefits, invitation,
+registration call-to-action and relevant hashtags.
+Use an engaging tone.
+""",
+
+    "One-shot": """
+Example:
+Join our Python Workshop!
+Learn Python programming through practical sessions.
+Register today and improve your coding skills!
+#Python #Workshop #Learning
+
+Now create a similar promotional post for an AI Workshop.
+""",
+
+    "Few-shot": """
+Example 1:
+Join our Web Development Workshop!
+Build websites and learn modern technologies.
+Register now!
+#WebDevelopment #Workshop
+
+Example 2:
+Join our Data Science Workshop!
+Explore data analysis and machine learning.
+Don't miss this opportunity!
+#DataScience #Learning
+
+Now create an engaging promotional social media post
+for an AI Workshop.
+
+Include benefits, registration details and hashtags.
+"""
+}
+
+for method, prompt in prompts.items():
+    print("\n", "=" * 50)
+    print(method)
+    print("=" * 50)
+    print(prompt)
