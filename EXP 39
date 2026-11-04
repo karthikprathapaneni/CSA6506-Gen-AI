@@ -1,0 +1,75 @@
+from langchain_community.vectorstores import Chroma
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_openai import ChatOpenAI
+from langchain_core.documents import Document
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+# Initialize embedding model
+embeddings = HuggingFaceEmbeddings(
+    model_name="sentence-transformers/all-MiniLM-L6-v2"
+)
+
+# Healthcare knowledge
+documents = [
+    Document(page_content="AI helps doctors identify diseases."),
+    Document(page_content="AI analyzes medical images."),
+    Document(page_content="AI supports personalized treatment."),
+    Document(page_content="Machine Learning helps predict patient risks."),
+    Document(page_content="AI supports medical research and drug discovery.")
+]
+
+# Create vector database
+vectorstore = Chroma.from_documents(
+    documents=documents,
+    embedding=embeddings,
+    collection_name="healthcare_chatbot",
+    persist_directory="./healthcare_db"
+)
+
+# Initialize LLM
+llm = ChatOpenAI(
+    model="gpt-5.5",
+    temperature=0
+)
+
+print("Healthcare AI Chatbot Started!")
+print("Type exit to stop.")
+
+while True:
+
+    question = input("\nYou: ")
+
+    if question.lower() == "exit":
+        break
+
+    # Retrieve relevant documents
+    results = vectorstore.similarity_search(
+        question, k=3
+    )
+
+    context = "\n".join(
+        [doc.page_content for doc in results]
+    )
+
+    prompt = f"""
+    You are a healthcare information chatbot.
+
+    Use this context to answer the question.
+
+    Context:
+    {context}
+
+    Question:
+    {question}
+
+    Provide a simple and informative answer.
+    If the context does not contain the answer,
+    clearly state that.
+    """
+
+    response = llm.invoke(prompt)
+
+    print("\nBot:", response.content)
