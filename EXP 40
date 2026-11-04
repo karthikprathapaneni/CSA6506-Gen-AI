@@ -1,0 +1,80 @@
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.messages import HumanMessage, AIMessage
+from langchain_community.vectorstores import Chroma
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_core.documents import Document
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Create documents
+docs = [
+    Document(page_content="Python is a high-level programming language."),
+    Document(page_content="Machine Learning is a subset of AI."),
+    Document(page_content="Deep Learning uses neural networks."),
+    Document(page_content="AI is used in healthcare and education.")
+]
+
+# Embeddings
+embeddings = HuggingFaceEmbeddings(
+    model_name="sentence-transformers/all-MiniLM-L6-v2"
+)
+
+# Vector database
+db = Chroma.from_documents(
+    docs,
+    embeddings,
+    collection_name="context_chatbot"
+)
+
+# LLM
+llm = ChatOpenAI(
+    model="gpt-5.5",
+    temperature=0
+)
+
+prompt = ChatPromptTemplate.from_messages([
+    ("system", """
+    You are an intelligent AI assistant.
+
+    Use the retrieved context and previous conversation
+    to answer the current question.
+
+    Retrieved context:
+    {context}
+    """),
+    MessagesPlaceholder(variable_name="history"),
+    ("human", "{question}")
+])
+
+history = []
+
+print("Context-Aware Chatbot Started!")
+print("Type exit to stop.")
+
+while True:
+
+    question = input("\nYou: ")
+
+    if question.lower() == "exit":
+        break
+
+    results = db.similarity_search(question, k=3)
+
+    context = "\n".join(
+        [doc.page_content for doc in results]
+    )
+
+    chain = prompt | llm
+
+    response = chain.invoke({
+        "context": context,
+        "history": history,
+        "question": question
+    })
+
+    print("\nBot:", response.content)
+
+    history.append(HumanMessage(content=question))
+    history.append(AIMessage(content=response.content))
