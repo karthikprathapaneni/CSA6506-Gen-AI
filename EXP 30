@@ -1,0 +1,54 @@
+from openai import OpenAI
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+schema = """
+Database: College
+
+Table: Students
+Columns:
+student_id INT PRIMARY KEY
+name VARCHAR(50)
+department VARCHAR(30)
+marks INT
+
+Table: Courses
+Columns:
+course_id INT PRIMARY KEY
+course_name VARCHAR(50)
+student_id INT
+"""
+
+requirement = input("Enter SQL requirement: ")
+
+prompt = f"""
+You are an expert SQL developer.
+
+Database Schema:
+{schema}
+
+Requirement:
+{requirement}
+
+Instructions:
+1. Generate the correct SQL query.
+2. Use appropriate SQL clauses.
+3. Explain the query briefly.
+4. Mention assumptions if necessary.
+5. Return the SQL query in a code block.
+"""
+
+try:
+    response = client.responses.create(
+        model="gpt-5.5",
+        input=prompt
+    )
+
+    print("\nGenerated SQL Query:\n")
+    print(response.output_text)
+
+except Exception as e:
+    print("Error:", e)
