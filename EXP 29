@@ -1,0 +1,42 @@
+from openai import OpenAI
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+problem = input("Enter computational problem: ")
+
+prompt = f"""
+You are an expert Python programmer.
+
+Generate a Python program for the following problem:
+
+{problem}
+
+Requirements:
+1. Use simple Python syntax.
+2. Include comments.
+3. Handle invalid inputs.
+4. Include sample input and output.
+5. Explain the algorithm.
+6. Return only valid Python code inside a code block.
+"""
+
+try:
+    response = client.responses.create(
+        model="gpt-5.5",
+        input=prompt
+    )
+
+    result = response.output_text
+    print("\nGenerated Python Code:\n")
+    print(result)
+
+    with open("generated_program.txt", "w") as file:
+        file.write(result)
+
+    print("\nProgram saved successfully.")
+
+except Exception as e:
+    print("Error:", e)
