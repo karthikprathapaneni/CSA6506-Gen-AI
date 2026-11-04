@@ -1,0 +1,120 @@
+from openai import OpenAI
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+task = "Explain the benefits of Artificial Intelligence in education."
+
+prompts = {
+    "Prompt 1": task,
+
+    "Prompt 2": """
+Explain the benefits of Artificial Intelligence in education.
+Use simple language and provide five important points.
+""",
+
+    "Prompt 3": """
+Act as an educational technology expert.
+
+Explain the benefits of Artificial Intelligence in education.
+
+Requirements:
+1. Write in simple English.
+2. Include five major benefits.
+3. Provide practical examples.
+4. Maintain logical structure.
+5. Include a short conclusion.
+"""
+}
+
+results = {}
+
+# Generate responses
+for name, prompt in prompts.items():
+
+    print("\nGenerating:", name)
+
+    response = client.responses.create(
+        model="gpt-5.5",
+        input=prompt
+    )
+
+    results[name] = response.output_text
+
+    print(results[name])
+
+
+# Evaluate responses
+evaluation_prompt = f"""
+Evaluate the following responses for the task:
+
+{task}
+
+{results}
+
+Give each response a score from 1 to 10
+for the following criteria:
+
+1. Relevance
+2. Accuracy
+3. Completeness
+4. Clarity
+5. Format adherence
+
+Display the evaluation in a table.
+Identify the best-performing prompt and explain why.
+"""
+
+evaluation = client.responses.create(
+    model="gpt-5.5",
+    input=evaluation_prompt
+)
+
+print("\nPROMPT EVALUATION:")
+print(evaluation.output_text)
+
+
+# Refine the best prompt
+refinement_prompt = f"""
+You are an expert prompt engineer.
+
+Original task:
+{task}
+
+Original prompts:
+{prompts}
+
+Evaluation:
+{evaluation.output_text}
+
+Improve the best-performing prompt.
+
+The refined prompt must improve:
+1. Relevance
+2. Accuracy
+3. Completeness
+4. Clarity
+5. Format adherence
+
+Display the refined prompt clearly.
+"""
+
+refinement = client.responses.create(
+    model="gpt-5.5",
+    input=refinement_prompt
+)
+
+print("\nREFINED PROMPT:")
+print(refinement.output_text)
+
+
+# Generate final output using refined prompt
+final_prompt = client.responses.create(
+    model="gpt-5.5",
+    input=refinement.output_text
+)
+
+print("\nFINAL IMPROVED RESPONSE:")
+print(final_prompt.output_text)
