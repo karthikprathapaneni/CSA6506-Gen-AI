@@ -1,0 +1,73 @@
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+from openai import OpenAI
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+client = OpenAI(
+    api_key=os.getenv("OPENAI_API_KEY")
+)
+
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+# 1. Document loading
+with open("documents/ai.txt", "r", encoding="utf-8") as file:
+    text = file.read()
+
+# 2. Text chunking
+words = text.split()
+
+chunk_size = 40
+
+chunks = [
+    " ".join(words[i:i + chunk_size])
+    for i in range(0, len(words), chunk_size)
+]
+
+print("Number of chunks:", len(chunks))
+
+# 3. Embedding generation
+embeddings = model.encode(chunks)
+
+# 4. Retrieval
+question = input("\nAsk your question: ")
+
+query_embedding = model.encode([question])
+
+scores = cosine_similarity(
+    query_embedding,
+    embeddings
+)[0]
+
+top_indices = scores.argsort()[-2:][::-1]
+
+context = "\n".join(
+    [chunks[i] for i in top_indices]
+)
+
+print("\nRetrieved Context:")
+print(context)
+
+# 5. Answer generation
+prompt = f"""
+Use the following context to answer the question.
+
+Context:
+{context}
+
+Question:
+{question}
+
+Give a clear and accurate answer.
+Do not invent information.
+"""
+
+response = client.responses.create(
+    model="gpt-5.5",
+    input=prompt
+)
+
+print("\nFinal Answer:")
+print(response.output_text)
