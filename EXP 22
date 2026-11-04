@@ -1,0 +1,47 @@
+prompts = {
+    "Zero-shot": """
+Write a 200-word blog on "Applications of Artificial Intelligence
+in Healthcare".
+
+Discuss disease diagnosis, medical imaging, drug discovery,
+robotic surgery and personalized treatment.
+Use simple and informative language.
+""",
+
+    "One-shot": """
+Example:
+Topic: Artificial Intelligence in Education
+Blog: Artificial Intelligence is transforming education by
+providing personalized learning, automated assessment and
+intelligent tutoring systems.
+
+Now write a 200-word blog on "Applications of Artificial
+Intelligence in Healthcare".
+
+Include diagnosis, medical imaging, drug discovery and
+patient care.
+""",
+
+    "Few-shot": """
+Example 1:
+Topic: AI in Banking
+Blog: AI helps banks detect fraud, automate transactions
+and improve customer service.
+
+Example 2:
+Topic: AI in Agriculture
+Blog: AI supports farmers through crop monitoring,
+disease detection and smart irrigation.
+
+Now write a 200-word blog on "Applications of Artificial
+Intelligence in Healthcare".
+
+Include an introduction, applications and conclusion.
+"""
+}
+
+for method, prompt in prompts.items():
+    print("\n", "=" * 50)
+    print(method)
+    print("=" * 50)
+    print(prompt)
