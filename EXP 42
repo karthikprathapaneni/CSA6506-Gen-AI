@@ -1,0 +1,148 @@
+import streamlit as st
+from pypdf import PdfReader
+from io import BytesIO
+
+from langchain_core.documents import Document
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.vectorstores import Chroma
+from langchain_openai import ChatOpenAI
+
+st.set_page_config(
+    page_title="Document AI Assistant",
+    page_icon="🤖"
+)
+
+st.title("Document-Based AI Assistant")
+
+st.write(
+    "Upload multiple PDF or TXT documents "
+    "and ask questions about their contents."
+)
+
+# Upload multiple documents
+uploaded_files = st.file_uploader(
+    "Upload Documents",
+    type=["pdf", "txt"],
+    accept_multiple_files=True
+)
+
+if uploaded_files:
+
+    documents = []
+
+    # Read uploaded files
+    for file in uploaded_files:
+
+        if file.name.endswith(".txt"):
+
+            text = file.getvalue().decode("utf-8")
+
+            documents.append(
+                Document(
+                    page_content=text,
+                    metadata={"source": file.name}
+                )
+            )
+
+        elif file.name.endswith(".pdf"):
+
+            reader = PdfReader(
+                BytesIO(file.getvalue())
+            )
+
+            for page_number, page in enumerate(reader.pages):
+
+                text = page.extract_text() or ""
+
+                if text.strip():
+                    documents.append(
+                        Document(
+                            page_content=text,
+                            metadata={
+                                "source": file.name,
+                                "page": page_number + 1
+                            }
+                        )
+                    )
+
+    if documents:
+
+        # Split documents
+        splitter = RecursiveCharacterTextSplitter(
+            chunk_size=500,
+            chunk_overlap=50
+        )
+
+        chunks = splitter.split_documents(documents)
+
+        # Generate embeddings
+        embeddings = HuggingFaceEmbeddings(
+            model_name="sentence-transformers/all-MiniLM-L6-v2"
+        )
+
+        # Create vector database
+        db = Chroma.from_documents(
+            documents=chunks,
+            embedding=embeddings
+        )
+
+        st.success(
+            f"{len(uploaded_files)} documents processed successfully!"
+        )
+
+        # Question input
+        question = st.text_input(
+            "Ask a question about your documents:"
+        )
+
+        if st.button("Generate Answer"):
+
+            if question.strip():
+
+                # Retrieve relevant documents
+                results = db.similarity_search(
+                    question,
+                    k=3
+                )
+
+                context = "\n".join(
+                    [doc.page_content for doc in results]
+                )
+
+                # Generate answer
+                llm = ChatOpenAI(
+                    model="gpt-4.1-mini"
+                )
+
+                prompt = f"""
+                You are an intelligent document assistant.
+
+                Answer the question using only the
+                provided document context.
+
+                Context:
+                {context}
+
+                Question:
+                {question}
+
+                If the information is unavailable,
+                clearly mention that.
+                """
+
+                response = llm.invoke(prompt)
+
+                st.subheader("Generated Answer")
+
+                st.write(response.content)
+
+                st.subheader("Retrieved Sources")
+
+                for doc in results:
+                    st.write(
+                        doc.metadata.get("source", "Unknown")
+                    )
+
+            else:
+                st.warning("Please enter a question.")
