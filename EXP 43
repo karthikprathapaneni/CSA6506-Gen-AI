@@ -1,0 +1,39 @@
+from transformers import pipeline
+
+def main():
+    print("ENGINEERING COLLEGE STUDENT CHATBOT")
+    print("Ask your college-related questions.")
+    print("Type 'exit' to stop.")
+
+    chatbot = pipeline(
+        "text2text-generation",
+        model="google/flan-t5-small"
+    )
+
+    while True:
+        question = input("\nStudent: ")
+
+        if question.lower() == "exit":
+            print("Thank you!")
+            break
+
+        prompt = f"""
+        You are an engineering college assistant.
+        Answer student questions about admissions,
+        departments, examinations, fees and facilities.
+        Do not invent official college information.
+
+        Question: {question}
+        Answer:
+        """
+
+        response = chatbot(
+            prompt,
+            max_new_tokens=120
+        )
+
+        print("Chatbot:", response[0]["generated_text"])
+
+
+if __name__ == "__main__":
+    main()
