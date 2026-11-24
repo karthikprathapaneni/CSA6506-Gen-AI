@@ -1,0 +1,127 @@
+import os
+import ollama
+import chromadb
+
+from pypdf import PdfReader
+from sentence_transformers import SentenceTransformer
+
+DOCUMENT_FOLDER = "documents"
+
+print("LOCAL RAG ENGINEERING QUESTION ANSWERING")
+
+# Load embedding model
+print("\nLoading embedding model...")
+embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+
+# Create vector database
+client = chromadb.PersistentClient(path="./chroma_db")
+
+# Recreate collection for this practical run
+try:
+    client.delete_collection("engineering_docs")
+except Exception:
+    pass
+
+collection = client.create_collection("engineering_docs")
+
+
+# Read PDF and TXT documents
+def read_documents():
+    documents = []
+
+    for filename in os.listdir(DOCUMENT_FOLDER):
+        path = os.path.join(DOCUMENT_FOLDER, filename)
+
+        if filename.lower().endswith(".txt"):
+            with open(path, "r", encoding="utf-8") as file:
+                documents.append(file.read())
+
+        elif filename.lower().endswith(".pdf"):
+            reader = PdfReader(path)
+
+            for page in reader.pages:
+                documents.append(page.extract_text() or "")
+
+    return documents
+
+
+# Split text into smaller chunks
+def split_text(text, chunk_size=500):
+    words = text.split()
+    chunks = []
+
+    for i in range(0, len(words), chunk_size):
+        chunk = " ".join(words[i:i + chunk_size])
+
+        if chunk.strip():
+            chunks.append(chunk)
+
+    return chunks
+
+
+# Load documents into vector database
+documents = read_documents()
+chunks = []
+
+for document in documents:
+    chunks.extend(split_text(document))
+
+if not chunks:
+    print("No documents found. Add PDF or TXT files to the documents folder.")
+    raise SystemExit
+
+embeddings = embedding_model.encode(chunks).tolist()
+
+collection.add(
+    ids=[f"doc_{i}" for i in range(len(chunks))],
+    documents=chunks,
+    embeddings=embeddings
+)
+
+print(f"\nSuccessfully loaded {len(chunks)} document chunks.")
+
+
+# Ask questions using RAG
+while True:
+    question = input("\nAsk an engineering question (or type exit): ")
+
+    if question.lower() == "exit":
+        break
+
+    question_embedding = embedding_model.encode(
+        [question]
+    ).tolist()
+
+    results = collection.query(
+        query_embeddings=question_embedding,
+        n_results=min(4, len(chunks))
+    )
+
+    retrieved_chunks = results["documents"][0]
+
+    context = "\n\n".join(retrieved_chunks)
+
+    prompt = f"""
+    You are an engineering document assistant.
+
+    Answer the question using only the retrieved context.
+    If the answer is not present, say that it is not available
+    in the uploaded documents.
+
+    CONTEXT:
+    {context}
+
+    QUESTION:
+    {question}
+    """
+
+    response = ollama.generate(
+        model="llama3.2",
+        prompt=prompt
+    )
+
+    print("\nRETRIEVED INFORMATION:")
+    print(context)
+
+    print("\nGENERATED ANSWER:")
+    print(response["response"])
