@@ -1,0 +1,71 @@
+from transformers import pipeline
+from pypdf import PdfReader
+
+def main():
+    print("ENGINEERING DOCUMENT SUMMARIZATION")
+
+    filename = input(
+        "Enter PDF file path: "
+    ).strip().strip('"')
+
+    reader = PdfReader(filename)
+
+    text = ""
+
+    for page in reader.pages:
+        text += page.extract_text() or ""
+
+    if not text.strip():
+        print("No readable text found in PDF.")
+        return
+
+    print("Loading summarization model...")
+
+    summarizer = pipeline(
+        "summarization",
+        model="sshleifer/distilbart-cnn-12-6"
+    )
+
+    print("Generating summary...")
+
+    words = text.split()
+
+    chunks = [
+        " ".join(words[i:i + 400])
+        for i in range(0, len(words), 400)
+    ]
+
+    summaries = []
+
+    for chunk in chunks:
+        if len(chunk.split()) < 30:
+            continue
+
+        result = summarizer(
+            chunk,
+            max_length=120,
+            min_length=30,
+            do_sample=False
+        )
+
+        summaries.append(
+            result[0]["summary_text"]
+        )
+
+    final_summary = "\n".join(summaries)
+
+    print("\nDOCUMENT SUMMARY:")
+    print(final_summary)
+
+    with open(
+        "summary.txt",
+        "w",
+        encoding="utf-8"
+    ) as file:
+        file.write(final_summary)
+
+    print("\nSummary saved successfully!")
+
+
+if __name__ == "__main__":
+    main()
