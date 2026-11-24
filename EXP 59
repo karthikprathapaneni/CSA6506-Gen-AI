@@ -1,1 +1,67 @@
 
+import ollama
+
+print("LLM HALLUCINATION ANALYSIS")
+
+reference = input("\nEnter reference information: ")
+question = input("\nEnter your question: ")
+
+prompt = f"""
+Answer the question using only the reference information.
+
+REFERENCE:
+{reference}
+
+QUESTION:
+{question}
+
+If the answer is not available in the reference,
+say "Not available in the reference."
+Do not invent facts.
+"""
+
+response = ollama.generate(
+    model="llama3.2",
+    prompt=prompt
+)
+
+answer = response["response"]
+
+print("\nGENERATED ANSWER:")
+print(answer)
+
+analysis_prompt = f"""
+Compare the generated answer with the reference.
+
+REFERENCE:
+{reference}
+
+QUESTION:
+{question}
+
+GENERATED ANSWER:
+{answer}
+
+Identify:
+1. Claims supported by the reference.
+2. Claims not supported by the reference.
+3. Any possible hallucinations.
+
+Do not assume a claim is true if the reference does not support it.
+"""
+
+analysis = ollama.generate(
+    model="llama3.2",
+    prompt=analysis_prompt
+)
+
+print("\nHALLUCINATION ANALYSIS:")
+print(analysis["response"])
+
+with open("hallucination_analysis.txt", "w", encoding="utf-8") as file:
+    file.write("REFERENCE:\n" + reference + "\n\n")
+    file.write("QUESTION:\n" + question + "\n\n")
+    file.write("GENERATED ANSWER:\n" + answer + "\n\n")
+    file.write("ANALYSIS:\n" + analysis["response"])
+
+print("\nReport saved as hallucination_analysis.txt")
