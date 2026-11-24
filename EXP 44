@@ -1,0 +1,38 @@
+from transformers import pipeline
+
+def main():
+    print("ENGINEERING TECHNICAL SUPPORT CHATBOT")
+    print("Ask any engineering-related technical question.")
+    print("Type 'exit' to stop.")
+
+    assistant = pipeline(
+        "text2text-generation",
+        model="google/flan-t5-base"
+    )
+
+    while True:
+        question = input("\nEnter your question: ")
+
+        if question.lower() == "exit":
+            break
+
+        prompt = f"""
+        You are an engineering technical expert.
+        Explain the following question in simple language.
+        Provide a suitable solution and practical example.
+
+        Question: {question}
+        Answer:
+        """
+
+        result = assistant(
+            prompt,
+            max_new_tokens=180
+        )
+
+        print("\nSolution:")
+        print(result[0]["generated_text"])
+
+
+if __name__ == "__main__":
+    main()
