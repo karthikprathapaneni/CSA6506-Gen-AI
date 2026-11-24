@@ -1,0 +1,47 @@
+from transformers import pipeline
+
+def main():
+    print("MACHINE TRANSLATION APPLICATION")
+
+    text = input(
+        "Enter English engineering text: "
+    )
+
+    if not text.strip():
+        print("Please enter some text.")
+        return
+
+    print("Loading translation model...")
+
+    translator = pipeline(
+        "translation",
+        model="Helsinki-NLP/opus-mt-en-hi"
+    )
+
+    print("Translating English into Hindi...")
+
+    result = translator(
+        text,
+        max_length=256
+    )
+
+    translated_text = result[0]["translation_text"]
+
+    print("\nEnglish Text:")
+    print(text)
+
+    print("\nHindi Translation:")
+    print(translated_text)
+
+    with open(
+        "hindi_translation.txt",
+        "w",
+        encoding="utf-8"
+    ) as file:
+        file.write(translated_text)
+
+    print("\nTranslation saved successfully!")
+
+
+if __name__ == "__main__":
+    main()
