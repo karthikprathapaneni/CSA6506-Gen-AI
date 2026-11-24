@@ -1,0 +1,31 @@
+from gtts import gTTS
+import os
+
+def main():
+    print("TEXT TO SPEECH APPLICATION")
+
+    text = input(
+        "Enter engineering-related text: "
+    )
+
+    if not text.strip():
+        print("Please enter some text.")
+        return
+
+    print("Converting text into speech...")
+
+    speech = gTTS(
+        text=text,
+        lang="en",
+        slow=False
+    )
+
+    speech.save("engineering_audio.mp3")
+
+    print("Audio generated successfully!")
+
+    os.startfile("engineering_audio.mp3")
+
+
+if __name__ == "__main__":
+    main()
