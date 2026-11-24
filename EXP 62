@@ -1,0 +1,138 @@
+import os
+import ollama
+import chromadb
+
+from pypdf import PdfReader
+from sentence_transformers import SentenceTransformer
+
+DOCUMENT_FOLDER = "documents"
+
+print("RAG-BASED ENGINEERING TROUBLESHOOTING SYSTEM")
+
+# Load embedding model
+print("\nLoading embedding model...")
+embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+
+# Initialize vector database
+client = chromadb.PersistentClient(path="./troubleshooting_db")
+
+try:
+    client.delete_collection("troubleshooting_docs")
+except Exception:
+    pass
+
+collection = client.create_collection("troubleshooting_docs")
+
+
+# Extract information from documents
+def load_documents():
+    documents = []
+
+    for filename in os.listdir(DOCUMENT_FOLDER):
+        path = os.path.join(DOCUMENT_FOLDER, filename)
+
+        if filename.lower().endswith(".txt"):
+            with open(path, "r", encoding="utf-8") as file:
+                documents.append(file.read())
+
+        elif filename.lower().endswith(".pdf"):
+            reader = PdfReader(path)
+
+            for page in reader.pages:
+                documents.append(page.extract_text() or "")
+
+    return documents
+
+
+# Divide documents into chunks
+def create_chunks(text, size=500):
+    words = text.split()
+    chunks = []
+
+    for i in range(0, len(words), size):
+        chunk = " ".join(words[i:i + size])
+
+        if chunk.strip():
+            chunks.append(chunk)
+
+    return chunks
+
+
+# Store document embeddings
+documents = load_documents()
+chunks = []
+
+for document in documents:
+    chunks.extend(create_chunks(document))
+
+if not chunks:
+    print("No documents found. Add PDF or TXT files to the documents folder.")
+    raise SystemExit
+
+embeddings = embedding_model.encode(chunks).tolist()
+
+collection.add(
+    ids=[f"trouble_{i}" for i in range(len(chunks))],
+    documents=chunks,
+    embeddings=embeddings
+)
+
+print(f"\nLoaded {len(chunks)} troubleshooting chunks.")
+
+
+# Troubleshooting question and answer
+while True:
+    problem = input(
+        "\nDescribe your engineering problem (or type exit): "
+    )
+
+    if problem.lower() == "exit":
+        break
+
+    query_embedding = embedding_model.encode(
+        [problem]
+    ).tolist()
+
+    results = collection.query(
+        query_embeddings=query_embedding,
+        n_results=min(4, len(chunks))
+    )
+
+    retrieved_info = results["documents"][0]
+
+    context = "\n\n".join(retrieved_info)
+
+    prompt = f"""
+    You are an engineering troubleshooting assistant.
+
+    Analyze the user's problem using the retrieved documents.
+
+    Provide the response in this format:
+
+    1. Problem Identification
+    2. Possible Causes
+    3. Step-by-Step Troubleshooting
+    4. Recommended Solution
+    5. Safety Precautions
+
+    Use only the retrieved information.
+    If the documents do not contain enough information,
+    clearly mention that and do not invent a solution.
+
+    RETRIEVED ENGINEERING INFORMATION:
+    {context}
+
+    USER PROBLEM:
+    {problem}
+    """
+
+    response = ollama.generate(
+        model="llama3.2",
+        prompt=prompt
+    )
+
+    print("\nRETRIEVED DOCUMENTS:")
+    print(context)
+
+    print("\nTROUBLESHOOTING RECOMMENDATIONS:")
+    print(response["response"])
