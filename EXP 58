@@ -1,0 +1,28 @@
+import ollama
+
+print("OLLAMA QUESTION ANSWERING SYSTEM")
+
+question = input("Enter your question: ")
+
+context = input("Enter reference information (optional): ")
+
+prompt = f"""
+Answer the question using the reference information.
+
+Reference Information:
+{context}
+
+Question:
+{question}
+
+If the reference does not contain the answer,
+clearly mention that the information is not available.
+"""
+
+response = ollama.generate(
+    model="llama3.2",
+    prompt=prompt
+)
+
+print("\nAnswer:")
+print(response["response"])
