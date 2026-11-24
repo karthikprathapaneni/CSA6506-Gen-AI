@@ -1,0 +1,63 @@
+from transformers import pipeline
+
+def main():
+    print("AI RESEARCH ASSISTANT")
+
+    topic = input(
+        "Enter engineering research topic: "
+    )
+
+    if not topic.strip():
+        print("Please enter a research topic.")
+        return
+
+    print("Loading pre-trained AI model...")
+
+    assistant = pipeline(
+        "text2text-generation",
+        model="google/flan-t5-base"
+    )
+
+    prompts = {
+        "Research Information":
+            f"Explain the engineering research topic: {topic}",
+
+        "Keywords":
+            f"List important research keywords for: {topic}",
+
+        "Research Summary":
+            f"Write a concise research summary about: {topic}"
+    }
+
+    output = ""
+
+    for heading, prompt in prompts.items():
+
+        result = assistant(
+            prompt,
+            max_new_tokens=150
+        )
+
+        answer = result[0]["generated_text"]
+
+        print("\n" + heading)
+        print("-------------------------")
+        print(answer)
+
+        output += (
+            heading + "\n" +
+            answer + "\n\n"
+        )
+
+    with open(
+        "research_report.txt",
+        "w",
+        encoding="utf-8"
+    ) as file:
+        file.write(output)
+
+    print("\nResearch report generated successfully!")
+
+
+if __name__ == "__main__":
+    main()
