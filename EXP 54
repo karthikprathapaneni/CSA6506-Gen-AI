@@ -1,0 +1,28 @@
+import streamlit as st
+import ollama
+
+st.title("Local LLM Text Summarization")
+
+text = st.text_area("Enter text to summarize:", height=250)
+
+if st.button("Summarize"):
+    if text.strip():
+        prompt = f"""
+        Summarize the following text in simple English.
+        Include only the important points.
+
+        Text:
+        {text}
+        """
+
+        response = ollama.chat(
+            model="llama3.2",
+            messages=[
+                {"role": "user", "content": prompt}
+            ]
+        )
+
+        st.subheader("Summary")
+        st.write(response["message"]["content"])
+    else:
+        st.warning("Please enter some text.")
