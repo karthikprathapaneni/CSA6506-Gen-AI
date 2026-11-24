@@ -1,0 +1,34 @@
+import whisper
+
+def main():
+    print("SPEECH TO TEXT APPLICATION")
+
+    audio_file = input(
+        "Enter audio file path: "
+    ).strip().strip('"')
+
+    print("Loading Whisper AI model...")
+
+    model = whisper.load_model("base")
+
+    print("Converting speech into text...")
+
+    result = model.transcribe(audio_file)
+
+    text = result["text"]
+
+    print("\nRecognized Text:")
+    print(text)
+
+    with open(
+        "recognized_text.txt",
+        "w",
+        encoding="utf-8"
+    ) as file:
+        file.write(text)
+
+    print("\nText saved successfully!")
+
+
+if __name__ == "__main__":
+    main()
