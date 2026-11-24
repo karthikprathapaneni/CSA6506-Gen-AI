@@ -1,0 +1,45 @@
+import torch
+from diffusers import StableDiffusionPipeline
+
+def main():
+    print("IMAGE GENERATION AND PROMPT COMPARISON")
+
+    prompts = [
+        "A modern suspension bridge",
+        "A futuristic suspension bridge at night",
+        "A realistic suspension bridge with steel cables"
+    ]
+
+    model_id = "runwayml/stable-diffusion-v1-5"
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    dtype = torch.float16 if device == "cuda" else torch.float32
+
+    generator = StableDiffusionPipeline.from_pretrained(
+        model_id,
+        torch_dtype=dtype
+    ).to(device)
+
+    for i, prompt in enumerate(prompts, start=1):
+
+        print("\nGenerating image", i)
+        print("Prompt:", prompt)
+
+        image = generator(
+            prompt,
+            num_inference_steps=25
+        ).images[0]
+
+        filename = f"image_{i}.png"
+
+        image.save(filename)
+
+        print("Saved:", filename)
+
+    print("\nAll images generated successfully!")
+    print("Compare the images based on their prompts.")
+
+
+if __name__ == "__main__":
+    main()
