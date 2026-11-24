@@ -1,0 +1,95 @@
+from sentence_transformers import SentenceTransformer
+from sentence_transformers import util
+import os
+
+def main():
+    print("AI RESUME SCREENING APPLICATION")
+
+    job_description = input(
+        "Enter engineering job description: "
+    )
+
+    folder = "resumes"
+
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+        print("Created resumes folder.")
+        print("Add candidate resume .txt files and run again.")
+        return
+
+    resume_files = [
+        f for f in os.listdir(folder)
+        if f.endswith(".txt")
+    ]
+
+    if not resume_files:
+        print("No resumes found!")
+        return
+
+    model = SentenceTransformer(
+        "sentence-transformers/all-MiniLM-L6-v2"
+    )
+
+    job_embedding = model.encode(
+        job_description,
+        convert_to_tensor=True
+    )
+
+    results = []
+
+    for filename in resume_files:
+
+        path = os.path.join(folder, filename)
+
+        with open(
+            path,
+            "r",
+            encoding="utf-8"
+        ) as file:
+            resume_text = file.read()
+
+        resume_embedding = model.encode(
+            resume_text,
+            convert_to_tensor=True
+        )
+
+        similarity = util.cos_sim(
+            job_embedding,
+            resume_embedding
+        ).item()
+
+        score = similarity * 100
+
+        results.append((filename, score))
+
+    results.sort(
+        key=lambda x: x[1],
+        reverse=True
+    )
+
+    print("\nRESUME RANKING")
+
+    for rank, (name, score) in enumerate(
+        results, start=1
+    ):
+        print(
+            f"{rank}. {name} - {score:.2f}% similarity"
+        )
+
+    with open(
+        "resume_results.txt",
+        "w",
+        encoding="utf-8"
+    ) as file:
+        for rank, (name, score) in enumerate(
+            results, start=1
+        ):
+            file.write(
+                f"{rank}. {name} - {score:.2f}% similarity\n"
+            )
+
+    print("\nResume screening completed!")
+
+
+if __name__ == "__main__":
+    main()
