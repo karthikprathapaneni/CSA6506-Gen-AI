@@ -1,0 +1,29 @@
+import ollama
+
+print("LOCAL LLM QUESTION ANSWERING SYSTEM")
+print("Type 'exit' to stop.\n")
+
+while True:
+    question = input("Enter your question: ")
+
+    if question.lower() == "exit":
+        print("Program stopped.")
+        break
+
+    response = ollama.chat(
+        model="llama3.2",
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a helpful engineering assistant."
+            },
+            {
+                "role": "user",
+                "content": question
+            }
+        ]
+    )
+
+    print("\nAnswer:")
+    print(response["message"]["content"])
+    print("-" * 50)
