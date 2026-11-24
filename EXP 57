@@ -1,0 +1,13 @@
+import ollama
+
+print("OLLAMA TEXT GENERATION")
+
+prompt = input("Enter your prompt: ")
+
+response = ollama.generate(
+    model="llama3.2",
+    prompt=prompt
+)
+
+print("\nGenerated Output:")
+print(response["response"])
